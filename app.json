@@ -4,12 +4,14 @@
     "slug": "luxe-locator-india",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "android": {
-      "package": "com.shubhkarne.luxelocatorindia"
-    },
-    "ios": {
-      "bundleIdentifier": "com.shubhkarne.luxelocatorindia"
+      "package": "com.luxelocator.india",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0e0d0b"
+      }
     }
   }
 }
