@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "Luxe Locator India",
+    "slug": "luxe-locator-india",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "android": {
+      "package": "com.shubhkarne.luxelocatorindia"
+    },
+    "ios": {
+      "bundleIdentifier": "com.shubhkarne.luxelocatorindia"
+    }
+  }
+}
