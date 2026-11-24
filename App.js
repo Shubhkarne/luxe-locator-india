@@ -1,16 +1,608 @@
+import React, { useState, useMemo } from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  Linking,
+  StyleSheet,
+  StatusBar,
+} from "react-native";
 
-import React, { useState, useMemo } from 'react';import {SafeAreaView,View,Text,TextInput,TouchableOpacity,FlatList,ScrollView,Linking,StyleSheet,StatusBar,} from 'react-native';
-const STORES = [{id: '1',brand: 'Louis Vuitton',category: 'Fashion & Leather',country: 'India',state: 'Maharashtra',city: 'Mumbai',mall: 'Jio World Plaza',address: 'G-15, Jio World Plaza, Bandra Kurla Complex, Mumbai 400051',lat: 19.0664,lng: 72.8693,},{id: '2',brand: 'Hermès',category: 'Fashion & Leather',country: 'India',state: 'Maharashtra',city: 'Mumbai',mall: 'Horniman Circle',address: '15A Horniman Circle, Fort, Mumbai 400001',lat: 18.9322,lng: 72.8347,},{id: '3',brand: 'Cartier',category: 'Watches & Jewelry',country: 'India',state: 'Maharashtra',city: 'Mumbai',mall: 'Jio World Plaza',address: 'Ground Floor, Jio World Plaza, BKC, Mumbai 400051',lat: 19.0664,lng: 72.8693,},{id: '4',brand: 'Sabyasachi',category: 'Indian Couture',country: 'India',state: 'Maharashtra',city: 'Mumbai',mall: 'Kala Ghoda Flagship',address: 'ICICI Bank Building, Veer Nariman Rd, Fort, Mumbai 400001',lat: 18.9318,lng: 72.8328,},{id: '5',brand: 'Rolex',category: 'Watches & Jewelry',country: 'India',state: 'Maharashtra',city: 'Pune',mall: 'The Pavilion (Ethos)',address: 'Senapati Bapat Rd, Shivajinagar, Pune 411016',lat: 18.5342,lng: 73.8299,},{id: '6',brand: 'Christian Dior',category: 'Fashion & Leather',country: 'India',state: 'Delhi',city: 'New Delhi',mall: 'DLF Emporio',address: 'Ground Floor, DLF Emporio, Vasant Kunj, New Delhi 110070',lat: 28.5436,lng: 77.1568,},{id: '7',brand: 'Bulgari',category: 'Watches & Jewelry',country: 'India',state: 'Delhi',city: 'New Delhi',mall: 'DLF Emporio',address: 'Shop 106, DLF Emporio, Vasant Kunj, New Delhi 110070',lat: 28.5436,lng: 77.1568,},{id: '8',brand: 'Rolex',category: 'Watches & Jewelry',country: 'India',state: 'Delhi',city: 'New Delhi',mall: 'The Chanakya',address: 'Yashwant Place Commercial Complex, Chanakyapuri, New Delhi 110021',lat: 28.5847,lng: 77.1912,},{id: '9',brand: 'Gucci',category: 'Fashion & Leather',country: 'India',state: 'Karnataka',city: 'Bengaluru',mall: 'UB City - The Collection',address: '24 Vittal Mallya Rd, Ashok Nagar, Bengaluru 560001',lat: 12.9716,lng: 77.5961,},{id: '10',brand: 'Louis Vuitton',category: 'Fashion & Leather',country: 'India',state: 'Karnataka',city: 'Bengaluru',mall: 'UB City - The Collection',address: '24 Vittal Mallya Rd, Ashok Nagar, Bengaluru 560001',lat: 12.9716,lng: 77.5961,},{id: '11',brand: 'Manish Malhotra',category: 'Indian Couture',country: 'India',state: 'Telangana',city: 'Hyderabad',mall: 'Banjara Hills Flagship',address: 'Road No. 12, Banjara Hills, Hyderabad 500034',lat: 17.4126,lng: 78.4392,},{id: '12',brand: 'Gucci',category: 'Fashion & Leather',country: 'India',state: 'West Bengal',city: 'Kolkata',mall: 'Quest Mall',address: '33 Syed Amir Ali Ave, Beck Bagan, Kolkata 700017',lat: 22.5391,lng: 88.3656,},{id: '13',brand: 'Burberry',category: 'Fashion & Leather',country: 'India',state: 'Tamil Nadu',city: 'Chennai',mall: 'Palladium Chennai',address: '142 Velachery Main Rd, Indira Gandhi Nagar, Chennai 600042',lat: 12.9916,lng: 80.2167,},{id: '14',brand: 'Omega',category: 'Watches & Jewelry',country: 'India',state: 'Gujarat',city: 'Ahmedabad',mall: 'Palladium Ahmedabad',address: 'Sarkhej - Gandhinagar Hwy, Thaltej, Ahmedabad 380054',lat: 23.0457,lng: 72.5074,},];
-export default function App() {const [selectedCountry, setSelectedCountry] = useState('India');const [selectedState, setSelectedState] = useState('All');const [selectedCity, setSelectedCity] = useState('All');const [selectedCategory, setSelectedCategory] = useState('All');const [searchQuery, setSearchQuery] = useState('');
-const countries = useMemo(() => ['All', ...new Set(STORES.map((s) => s.country))],[]);
-const states = useMemo(() => {const filtered =selectedCountry === 'All'? STORES: STORES.filter((s) => s.country === selectedCountry);return ['All', ...new Set(filtered.map((s) => s.state))];}, [selectedCountry]);
-const cities = useMemo(() => {const filtered = STORES.filter((s) =>(selectedCountry === 'All' || s.country === selectedCountry) &&(selectedState === 'All' || s.state === selectedState));return ['All', ...new Set(filtered.map((s) => s.city))];}, [selectedCountry, selectedState]);
-const categories = ['All', 'Fashion & Leather', 'Watches & Jewelry', 'Indian Couture'];
-const filteredStores = useMemo(() => {return STORES.filter((store) => {const matchCountry = selectedCountry === 'All' || store.country === selectedCountry;const matchState = selectedState === 'All' || store.state === selectedState;const matchCity = selectedCity === 'All' || store.city === selectedCity;const matchCategory = selectedCategory === 'All' || store.category === selectedCategory;const q = searchQuery.trim().toLowerCase();const matchQuery =!q ||store.brand.toLowerCase().includes(q) ||store.mall.toLowerCase().includes(q) ||store.city.toLowerCase().includes(q);return matchCountry && matchState && matchCity && matchCategory && matchQuery;});}, [selectedCountry, selectedState, selectedCity, selectedCategory, searchQuery]);
-const openMaps = (store) => {const query = encodeURIComponent(${store.brand} ${store.mall} ${store.city});const url =
-https://www.google.com/maps/search/?api=1&query=${query};Linking.openURL(url);};
-const renderChipRow = (label, items, activeValue, onSelect) => ({label}{items.map((item) => {const active = item === activeValue;return (<TouchableOpacitykey={item}onPress={() => onSelect(item)}style={[styles.chip, active && styles.chipActive]}><Text style={[styles.chipText, active && styles.chipTextActive]}>{item});})});
-return (
-<View style={styles.header}> <Text style={styles.title}>LUXE LOCATOR</Text> <Text style={styles.subtitle}> Official Luxury Boutiques • {filteredStores.length} Locations </Text> </View> <View style={styles.searchBox}> <TextInput style={styles.searchInput} placeholder="Search brand, mall, or city (e.g., Rolex, Jio World)..." placeholderTextColor="#8E8E93" value={searchQuery} onChangeText={setSearchQuery} /> </View> <View style={styles.filtersContainer}> {renderChipRow('COUNTRY', countries, selectedCountry, (val) => { setSelectedCountry(val); setSelectedState('All'); setSelectedCity('All'); })} {renderChipRow('STATE', states, selectedState, (val) => { setSelectedState(val); setSelectedCity('All'); })} {renderChipRow('CITY', cities, selectedCity, (val) => { setSelectedCity(val); })} {renderChipRow('CATEGORY', categories, selectedCategory, (val) => { setSelectedCategory(val); })} </View> <FlatList data={filteredStores} keyExtractor={(item) => item.id} contentContainerStyle={styles.listContent} ListEmptyComponent={ <Text style={styles.emptyText}>No luxury boutiques match this filter.</Text> } renderItem={({ item }) => ( <View style={styles.card}> <View style={styles.cardTop}> <Text style={styles.brandName}>{item.brand}</Text> <View style={styles.badge}> <Text style={styles.badgeText}>{item.category}</Text> </View> </View> <Text style={styles.mallText}>{item.mall}</Text> <Text style={styles.locationText}> {item.city}, {item.state} • {item.country} </Text> <Text style={styles.addressText}>{item.address}</Text> <TouchableOpacity style={styles.directionBtn} onPress={() => openMaps(item)} > <Text style={styles.directionBtnText}>Open in Maps & Directions ↗</Text> </TouchableOpacity> </View> )} /></SafeAreaView>
-);}
-const styles = StyleSheet.create({container: {flex: 1,backgroundColor: '#0F0F12',},header: {paddingHorizontal: 18,paddingTop: 14,paddingBottom: 10,},title: {color: '#D4AF37',fontSize: 22,fontWeight: '800',letterSpacing: 2,},subtitle: {color: '#A1A1AA',fontSize: 12,marginTop: 2,},searchBox: {paddingHorizontal: 16,marginBottom: 8,},searchInput: {backgroundColor: '#1C1C22',color: '#FFFFFF',borderRadius: 10,paddingHorizontal: 14,paddingVertical: 10,fontSize: 14,borderWidth: 1,borderColor: '#2C2C35',},filtersContainer: {paddingLeft: 16,paddingBottom: 8,borderBottomWidth: 1,borderBottomColor: '#1E1E24',},filterBlock: {marginBottom: 6,},filterLabel: {color: '#71717A',fontSize: 10,fontWeight: '700',letterSpacing: 1,marginBottom: 4,},chip: {backgroundColor: '#1C1C22',paddingHorizontal: 12,paddingVertical: 6,borderRadius: 16,marginRight: 8,borderWidth: 1,borderColor: '#2C2C35',},chipActive: {backgroundColor: '#D4AF37',borderColor: '#D4AF37',},chipText: {color: '#D4D4D8',fontSize: 12,fontWeight: '600',},chipTextActive: {color: '#0F0F12',fontWeight: '800',},listContent: {padding: 16,paddingBottom: 32,},card: {backgroundColor: '#18181D',borderRadius: 14,padding: 16,marginBottom: 12,borderWidth: 1,borderColor: '#272730',},cardTop: {flexDirection: 'row',justifyContent: 'space-between',alignItems: 'center',marginBottom: 6,},brandName: {color: '#FFFFFF',fontSize: 18,fontWeight: '700',},badge: {backgroundColor: '#26231B',paddingHorizontal: 8,paddingVertical: 4,borderRadius: 6,borderWidth: 1,borderColor: '#D4AF37',},badgeText: {color: '#D4AF37',fontSize: 10,fontWeight: '700',},mallText: {color: '#E4E4E7',fontSize: 14,fontWeight: '600',},locationText: {color: '#D4AF37',fontSize: 12,marginTop: 2,fontWeight: '600',},addressText: {color: '#A1A1AA',fontSize: 12,marginTop: 4,lineHeight: 17,},directionBtn: {marginTop: 12,backgroundColor: '#25252E',paddingVertical: 10,borderRadius: 8,alignItems: 'center',borderWidth: 1,borderColor: '#3A3A46',},directionBtnText: {color: '#FFFFFF',fontSize: 13,fontWeight: '700',},emptyText: {color: '#8E8E93',textAlign: 'center',marginTop: 40,fontSize: 14,},});
+const STORES = [
+  {
+    id: "1",
+    brand: "Louis Vuitton",
+    category: "Fashion & Leather",
+    country: "India",
+    state: "Maharashtra",
+    city: "Mumbai",
+    mall: "Jio World Plaza",
+    address: "G-15, Jio World Plaza, Bandra Kurla Complex, Mumbai 400051",
+    lat: 19.0664,
+    lng: 72.8691,
+  },
+  {
+    id: "2",
+    brand: "Hermes",
+    category: "Fashion & Leather",
+    country: "India",
+    state: "Maharashtra",
+    city: "Mumbai",
+    mall: "Horniman Circle",
+    address: "15A Horniman Circle, Fort, Mumbai 400001",
+    lat: 18.9322,
+    lng: 72.8347,
+  },
+  {
+    id: "3",
+    brand: "Cartier",
+    category: "Watches & Jewelry",
+    country: "India",
+    state: "Maharashtra",
+    city: "Mumbai",
+    mall: "Jio World Plaza",
+    address: "Ground Floor, Jio World Plaza, BKC, Mumbai 400051",
+    lat: 19.0664,
+    lng: 72.8691,
+  },
+  {
+    id: "4",
+    brand: "Sabyasachi",
+    category: "Indian Couture",
+    country: "India",
+    state: "Maharashtra",
+    city: "Mumbai",
+    mall: "Kala Ghoda Flagship",
+    address: "ICICI Bank Building, Veer Nariman Rd, Fort, Mumbai 400001",
+    lat: 18.9338,
+    lng: 72.8328,
+  },
+  {
+    id: "5",
+    brand: "Rolex",
+    category: "Watches & Jewelry",
+    country: "India",
+    state: "Maharashtra",
+    city: "Pune",
+    mall: "The Pavilion (Ethos)",
+    address: "Senapati Bapat Rd, Shivajinagar, Pune 411016",
+    lat: 18.5342,
+    lng: 73.8299,
+  },
+  {
+    id: "6",
+    brand: "Christian Dior",
+    category: "Fashion & Leather",
+    country: "India",
+    state: "Delhi",
+    city: "New Delhi",
+    mall: "DLF Emporio",
+    address: "Ground Floor, DLF Emporio, Vasant Kunj, New Delhi 110070",
+    lat: 28.5436,
+    lng: 77.1568,
+  },
+  {
+    id: "7",
+    brand: "Bulgari",
+    category: "Watches & Jewelry",
+    country: "India",
+    state: "Delhi",
+    city: "New Delhi",
+    mall: "DLF Emporio",
+    address: "Shop 106, DLF Emporio, Vasant Kunj, New Delhi 110070",
+    lat: 28.5436,
+    lng: 77.1568,
+  },
+  {
+    id: "8",
+    brand: "Rolex",
+    category: "Watches & Jewelry",
+    country: "India",
+    state: "Delhi",
+    city: "New Delhi",
+    mall: "The Chanakya",
+    address: "Yashwant Place Commercial Complex, Chanakyapuri, New Delhi 110021",
+    lat: 28.5847,
+    lng: 77.1852,
+  },
+  {
+    id: "9",
+    brand: "Gucci",
+    category: "Fashion & Leather",
+    country: "India",
+    state: "Karnataka",
+    city: "Bengaluru",
+    mall: "UB City - The Collection",
+    address: "24 Vittal Mallya Rd, Ashok Nagar, Bengaluru 560001",
+    lat: 12.9716,
+    lng: 77.5961,
+  },
+  {
+    id: "10",
+    brand: "Louis Vuitton",
+    category: "Fashion & Leather",
+    country: "India",
+    state: "Karnataka",
+    city: "Bengaluru",
+    mall: "UB City - The Collection",
+    address: "24 Vittal Mallya Rd, Ashok Nagar, Bengaluru 560001",
+    lat: 12.9716,
+    lng: 77.5961,
+  },
+  {
+    id: "11",
+    brand: "Manish Malhotra",
+    category: "Indian Couture",
+    country: "India",
+    state: "Telangana",
+    city: "Hyderabad",
+    mall: "Banjara Hills Flagship",
+    address: "Road No. 12, Banjara Hills, Hyderabad 500034",
+    lat: 17.4126,
+    lng: 78.4392,
+  },
+  {
+    id: "12",
+    brand: "Gucci",
+    category: "Fashion & Leather",
+    country: "India",
+    state: "West Bengal",
+    city: "Kolkata",
+    mall: "Quest Mall",
+    address: "33 Syed Amir Ali Ave, Beck Bagan, Kolkata 700017",
+    lat: 22.5396,
+    lng: 88.3656,
+  },
+  {
+    id: "13",
+    brand: "Burberry",
+    category: "Fashion & Leather",
+    country: "India",
+    state: "Tamil Nadu",
+    city: "Chennai",
+    mall: "Palladium Chennai",
+    address: "142 Velachery Main Rd, Velachery, Chennai 600042",
+    lat: 12.9916,
+    lng: 80.2197,
+  },
+  {
+    id: "14",
+    brand: "Omega",
+    category: "Watches & Jewelry",
+    country: "India",
+    state: "Gujarat",
+    city: "Ahmedabad",
+    mall: "Palladium Ahmedabad",
+    address: "SG Highway, Thaltej, Ahmedabad 380054",
+    lat: 23.0471,
+    lng: 72.5112,
+  },
+];
+
+const CATEGORIES = [
+  "All",
+  "Fashion & Leather",
+  "Watches & Jewelry",
+  "Indian Couture",
+];
+
+function FilterChips({ label, options, selected, onSelect }) {
+  return (
+    <View style={styles.filterBlock}>
+      <Text style={styles.filterLabel}>{label}</Text>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.chipRow}
+      >
+        {options.map((item) => {
+          const active = item === selected;
+          return (
+            <TouchableOpacity
+              key={item}
+              style={[styles.chip, active && styles.chipActive]}
+              onPress={() => onSelect(item)}
+            >
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                {item}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
+
+export default function App() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("All");
+  const [selectedState, setSelectedState] = useState("All");
+  const [selectedCity, setSelectedCity] = useState("All");
+  const [selectedBrand, setSelectedBrand] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const countries = useMemo(
+    () => ["All", ...Array.from(new Set(STORES.map((s) => s.country)))],
+    []
+  );
+
+  const states = useMemo(() => {
+    const base =
+      selectedCountry === "All"
+        ? STORES
+        : STORES.filter((s) => s.country === selectedCountry);
+    return ["All", ...Array.from(new Set(base.map((s) => s.state)))];
+  }, [selectedCountry]);
+
+  const cities = useMemo(() => {
+    const base = STORES.filter((s) => {
+      const okCountry =
+        selectedCountry === "All" || s.country === selectedCountry;
+      const okState = selectedState === "All" || s.state === selectedState;
+      return okCountry && okState;
+    });
+    return ["All", ...Array.from(new Set(base.map((s) => s.city)))];
+  }, [selectedCountry, selectedState]);
+
+  const brands = useMemo(
+    () => ["All", ...Array.from(new Set(STORES.map((s) => s.brand)))],
+    []
+  );
+
+  const filteredStores = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return STORES.filter((store) => {
+      const matchCountry =
+        selectedCountry === "All" || store.country === selectedCountry;
+      const matchState =
+        selectedState === "All" || store.state === selectedState;
+      const matchCity = selectedCity === "All" || store.city === selectedCity;
+      const matchBrand =
+        selectedBrand === "All" || store.brand === selectedBrand;
+      const matchCategory =
+        selectedCategory === "All" || store.category === selectedCategory;
+      const matchQuery =
+        !q ||
+        store.brand.toLowerCase().includes(q) ||
+        store.city.toLowerCase().includes(q) ||
+        store.state.toLowerCase().includes(q) ||
+        store.country.toLowerCase().includes(q) ||
+        store.mall.toLowerCase().includes(q) ||
+        store.category.toLowerCase().includes(q) ||
+        store.address.toLowerCase().includes(q);
+
+      return (
+        matchCountry &&
+        matchState &&
+        matchCity &&
+        matchBrand &&
+        matchCategory &&
+        matchQuery
+      );
+    });
+  }, [
+    searchQuery,
+    selectedCountry,
+    selectedState,
+    selectedCity,
+    selectedBrand,
+    selectedCategory,
+  ]);
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedCountry("All");
+    setSelectedState("All");
+    setSelectedCity("All");
+    setSelectedBrand("All");
+    setSelectedCategory("All");
+  };
+
+  const openDirections = (store) => {
+    const queryText =
+      store.lat && store.lng
+        ? `${store.lat},${store.lng}(${store.brand} - ${store.mall})`
+        : `${store.brand} ${store.mall} ${store.city} ${store.country}`;
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      queryText
+    )}`;
+    Linking.openURL(url);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0e0d0b" />
+
+      <View style={styles.header}>
+        <View style={styles.headerTopRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>LUXE LOCATOR INDIA</Text>
+            <Text style={styles.subtitle}>
+              Luxury Boutiques, Filters & Map Directions
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.resetBtn} onPress={resetFilters}>
+            <Text style={styles.resetBtnText}>Reset</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search brand, mall, city, state, or category..."
+        placeholderTextColor="#8c8578"
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+
+      <View style={styles.filtersContainer}>
+        <FilterChips
+          label="Country"
+          options={countries}
+          selected={selectedCountry}
+          onSelect={(val) => {
+            setSelectedCountry(val);
+            setSelectedState("All");
+            setSelectedCity("All");
+          }}
+        />
+        <FilterChips
+          label="State"
+          options={states}
+          selected={selectedState}
+          onSelect={(val) => {
+            setSelectedState(val);
+            setSelectedCity("All");
+          }}
+        />
+        <FilterChips
+          label="City"
+          options={cities}
+          selected={selectedCity}
+          onSelect={setSelectedCity}
+        />
+        <FilterChips
+          label="Brand"
+          options={brands}
+          selected={selectedBrand}
+          onSelect={setSelectedBrand}
+        />
+        <FilterChips
+          label="Category"
+          options={CATEGORIES}
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
+        />
+      </View>
+
+      <View style={styles.countBar}>
+        <Text style={styles.countText}>
+          {filteredStores.length}{" "}
+          {filteredStores.length === 1 ? "boutique" : "boutiques"} found
+        </Text>
+      </View>
+
+      <FlatList
+        data={filteredStores}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <View style={styles.emptyBox}>
+            <Text style={styles.emptyText}>
+              No matching luxury boutiques found. Try resetting filters.
+            </Text>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.brand}>{item.brand}</Text>
+              <Text style={styles.categoryTag}>{item.category}</Text>
+            </View>
+            <Text style={styles.locationLine}>
+              {item.city}, {item.state}, {item.country}
+            </Text>
+            <Text style={styles.mallText}>{item.mall}</Text>
+            <Text style={styles.addressText}>{item.address}</Text>
+            <TouchableOpacity
+              style={styles.directionsBtn}
+              onPress={() => openDirections(item)}
+            >
+              <Text style={styles.directionsBtnText}>Get Directions</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0e0d0b",
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#2a261f",
+  },
+  headerTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  title: {
+    color: "#d4af37",
+    fontSize: 20,
+    fontWeight: "700",
+    letterSpacing: 1.4,
+  },
+  subtitle: {
+    color: "#b5ad9e",
+    fontSize: 12,
+    marginTop: 3,
+  },
+  resetBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#d4af37",
+    backgroundColor: "#1b1915",
+  },
+  resetBtnText: {
+    color: "#d4af37",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  searchInput: {
+    backgroundColor: "#1b1915",
+    color: "#f5f2eb",
+    marginHorizontal: 14,
+    marginTop: 12,
+    marginBottom: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#332e25",
+    fontSize: 14,
+  },
+  filtersContainer: {
+    paddingBottom: 4,
+  },
+  filterBlock: {
+    marginBottom: 6,
+  },
+  filterLabel: {
+    color: "#9c9486",
+    fontSize: 11,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    marginLeft: 14,
+    marginBottom: 4,
+  },
+  chipRow: {
+    paddingHorizontal: 14,
+    gap: 8,
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: "#1b1915",
+    borderWidth: 1,
+    borderColor: "#332e25",
+  },
+  chipActive: {
+    backgroundColor: "#d4af37",
+    borderColor: "#d4af37",
+  },
+  chipText: {
+    color: "#dcd6ca",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  chipTextActive: {
+    color: "#0e0d0b",
+  },
+  countBar: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#221f19",
+    backgroundColor: "#14120f",
+  },
+  countText: {
+    color: "#b5ad9e",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  listContent: {
+    padding: 14,
+    paddingBottom: 32,
+  },
+  emptyBox: {
+    padding: 24,
+    alignItems: "center",
+    backgroundColor: "#181612",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#2c271e",
+  },
+  emptyText: {
+    color: "#b5ad9e",
+    fontSize: 13,
+    textAlign: "center",
+  },
+  card: {
+    backgroundColor: "#181612",
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#2c271e",
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 8,
+  },
+  brand: {
+    color: "#f5f2eb",
+    fontSize: 17,
+    fontWeight: "700",
+    flexShrink: 1,
+  },
+  categoryTag: {
+    color: "#d4af37",
+    fontSize: 11,
+    fontWeight: "600",
+    backgroundColor: "#262118",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  locationLine: {
+    color: "#d4af37",
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 4,
+  },
+  mallText: {
+    color: "#e6e0d4",
+    fontSize: 13,
+    fontWeight: "600",
+    marginTop: 6,
+  },
+  addressText: {
+    color: "#b5ad9e",
+    fontSize: 12,
+    marginTop: 3,
+    lineHeight: 17,
+  },
+  directionsBtn: {
+    marginTop: 12,
+    backgroundColor: "#d4af37",
+    paddingVertical: 10,
+    borderRadius: 7,
+    alignItems: "center",
+  },
+  directionsBtnText: {
+    color: "#0e0d0b",
+    fontWeight: "700",
+    fontSize: 13,
+  },
+});
