@@ -25,6 +25,20 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
+      - name: Generate luxury brand app icon
+        run: |
+          sudo apt-get update && sudo apt-get install -y imagemagick fonts-dejavu-core
+          mkdir -p assets
+          magick -size 1024x1024 xc:"#0e0d0b" \
+            -stroke "#d4af37" -strokewidth 14 -fill none \
+            -draw "roundrectangle 72,72 952,952 190,190" \
+            -stroke none -fill "#d4af37" \
+            -font DejaVu-Serif-Bold -pointsize 390 -gravity center \
+            -annotate +0+18 "LL" \
+            assets/icon.png
+
+          cp assets/icon.png assets/adaptive-icon.png
+
       - name: Install dependencies
         run: |
           npm install --legacy-peer-deps
@@ -34,15 +48,45 @@ jobs:
         run: npx expo export --platform android --output-dir /tmp/expo-dist
 
       - name: Prebuild Android native project
-        run: npx expo prebuild --platform android --non-interactive
+        run: npx expo prebuild --platform android --non-interactive --clean
 
-      - name: Build Release APK
+      - name: Build and Sign Release APK
         run: |
           chmod +x android/gradlew
           cd android
           ./gradlew assembleRelease \
             -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8" \
             -Dorg.gradle.daemon=false
+
+          KEYSTORE_PATH="$PWD/app/release-key.keystore"
+          keytool -genkeypair -v \
+            -keystore "$KEYSTORE_PATH" \
+            -alias luxe-release \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass android123 \
+            -keypass android123 \
+            -dname "CN=Luxe Locator India, OU=Mobile, O=LuxeLocator, L=Nagpur, S=Maharashtra, C=IN"
+
+          BUILD_TOOLS_DIR=$(find "$ANDROID_HOME/build-tools" -maxdepth 1 -mindepth 1 | sort -V | tail -n 1)
+          ZIPALIGN="$BUILD_TOOLS_DIR/zipalign"
+          APKSIGNER="$BUILD_TOOLS_DIR/apksigner"
+
+          UNSIGNED_APK="app/build/outputs/apk/release/app-release-unsigned.apk"
+          ALIGNED_APK="app/build/outputs/apk/release/app-release-aligned.apk"
+          SIGNED_APK="app/build/outputs/apk/release/app-release.apk"
+
+          if [ -f "$UNSIGNED_APK" ]; then
+            "$ZIPALIGN" -p -f 4 "$UNSIGNED_APK" "$ALIGNED_APK"
+            "$APKSIGNER" sign \
+              --ks "$KEYSTORE_PATH" \
+              --ks-key-alias luxe-release \
+              --ks-pass pass:android123 \
+              --key-pass pass:android123 \
+              --out "$SIGNED_APK" \
+              "$ALIGNED_APK"
+          fi
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
